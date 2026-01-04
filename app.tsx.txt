@@ -103,9 +103,10 @@ const App: React.FC = () => {
       )}
 
       {exporting && (
-        <div className="fixed inset-0 z-50 bg-[#0f172a]/90 backdrop-blur-md flex flex-col items-center justify-center text-white">
+        <div className="fixed inset-0 z-50 bg-[#0f172a]/90 backdrop-blur-md flex flex-col items-center justify-center text-white text-center p-6">
             <i className="fa-solid fa-camera-retro text-5xl text-orange-500 mb-6 animate-pulse"></i>
-            <p className="text-xl font-black uppercase tracking-tighter">Rendering HD Snapshot...</p>
+            <p className="text-xl font-black uppercase tracking-tighter">Rendering Institutional Snapshot...</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Optimizing for WhatsApp HD Quality</p>
         </div>
       )}
 

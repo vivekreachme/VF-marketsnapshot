@@ -35,7 +35,7 @@ const App: React.FC = () => {
     setExporting(true);
     try {
       // 3x pixel ratio ensures text is sharp on high-DPI smartphone screens
-      // This is crucial for WhatsApp which compresses images
+      // This is crucial for WhatsApp which compresses images significantly
       const dataUrl = await htmlToImage.toPng(reportRef.current, { 
         quality: 1.0, 
         pixelRatio: 3,

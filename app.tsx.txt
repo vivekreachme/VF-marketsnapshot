@@ -35,20 +35,24 @@ const App: React.FC = () => {
     setExporting(true);
     try {
       // 3x pixel ratio ensures text is sharp on high-DPI smartphone screens
+      // This is crucial for WhatsApp which compresses images
       const dataUrl = await htmlToImage.toPng(reportRef.current, { 
-        quality: 1, 
+        quality: 1.0, 
         pixelRatio: 3,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        cacheBust: true,
       });
+      
       const res = await fetch(dataUrl);
       const blob = await res.blob();
       const item = new ClipboardItem({ 'image/png': blob });
       await navigator.clipboard.write([item]);
+      
       setShowToast(true);
       setTimeout(() => setShowToast(false), 4000);
     } catch (err) {
       console.error('Clipboard copy failed:', err);
-      alert('Unable to copy automatically. Please ensure you are using a secure (HTTPS) connection or try using Chrome/Edge on Desktop.');
+      alert('Unable to copy automatically. Please ensure you are using a secure (HTTPS) connection or try clicking "Sync Data" and trying again.');
     } finally {
       setExporting(false);
     }
@@ -101,7 +105,7 @@ const App: React.FC = () => {
       {exporting && (
         <div className="fixed inset-0 z-50 bg-[#0f172a]/90 backdrop-blur-md flex flex-col items-center justify-center text-white">
             <i className="fa-solid fa-camera-retro text-5xl text-orange-500 mb-6 animate-pulse"></i>
-            <p className="text-xl font-black uppercase tracking-tighter">Generating High-Res Report...</p>
+            <p className="text-xl font-black uppercase tracking-tighter">Rendering HD Snapshot...</p>
         </div>
       )}
 
@@ -141,7 +145,7 @@ const App: React.FC = () => {
           {data && <MarketSnapshotReport data={data} reportRef={reportRef} />}
         </div>
         
-        <div className="mt-12 flex items-center gap-8 opacity-20 grayscale pointer-events-none">
+        <div className="mt-12 mb-20 flex items-center gap-8 opacity-20 grayscale pointer-events-none">
             <div className="flex items-center gap-3">
                 <div className="w-8 h-8 border-2 border-slate-900 rounded-full flex items-center justify-center text-[10px] font-black">1</div>
                 <span className="text-[10px] font-black uppercase">Copy</span>

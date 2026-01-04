@@ -30,7 +30,7 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
       className="w-[800px] bg-white overflow-hidden relative flex flex-col border border-slate-200"
       style={{ minHeight: '1250px' }}
     >
-      {/* Premium Terminal Header */}
+      {/* High-End Terminal Header */}
       <div className="bg-[#0f172a] text-white p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-600/5 rounded-full -mr-48 -mt-48 blur-[80px]"></div>
         <div className="absolute bottom-0 left-0 w-full h-[4px] bg-gradient-to-r from-orange-600 to-transparent"></div>
@@ -41,14 +41,14 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
                     <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">Vivek Financial</h1>
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <p className="text-[10px] font-bold tracking-[0.4em] text-slate-400 uppercase">Automated Market Intelligence</p>
+                        <p className="text-[10px] font-bold tracking-[0.4em] text-slate-400 uppercase">Institutional Market Intelligence</p>
                     </div>
                 </div>
             </div>
             <div className="text-right">
-                <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">MARKET TERMINAL</div>
+                <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">CLOSING SUMMARY</div>
                 <div className="text-3xl font-black tracking-tight mb-1 tabular-nums">{data.date}</div>
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">SNAPSHOT GENERATED AT {currentTime}</div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Update Issued at {currentTime}</div>
             </div>
         </div>
       </div>
@@ -71,7 +71,7 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
         ))}
       </div>
 
-      {/* Advanced Stats: Breadth & Macro */}
+      {/* Breadth & Commodity Pulse */}
       <div className="grid grid-cols-2 border-b border-slate-100 h-[320px]">
         <div className="p-10 border-r border-slate-100">
           <div className="flex items-center justify-between mb-8">

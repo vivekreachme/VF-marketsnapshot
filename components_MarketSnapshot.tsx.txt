@@ -30,7 +30,7 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
       className="w-[800px] bg-white overflow-hidden relative flex flex-col border border-slate-200"
       style={{ minHeight: '1250px' }}
     >
-      {/* High-End Terminal Header */}
+      {/* Premium Terminal Header */}
       <div className="bg-[#0f172a] text-white p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-600/5 rounded-full -mr-48 -mt-48 blur-[80px]"></div>
         <div className="absolute bottom-0 left-0 w-full h-[4px] bg-gradient-to-r from-orange-600 to-transparent"></div>
@@ -41,14 +41,14 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
                     <h1 className="text-4xl font-black uppercase tracking-tighter leading-none mb-2">Vivek Financial</h1>
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <p className="text-[10px] font-bold tracking-[0.4em] text-slate-400 uppercase">Institutional Market Terminal</p>
+                        <p className="text-[10px] font-bold tracking-[0.4em] text-slate-400 uppercase">Automated Market Intelligence</p>
                     </div>
                 </div>
             </div>
             <div className="text-right">
-                <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">CLOSING SNAPSHOT</div>
+                <div className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">MARKET TERMINAL</div>
                 <div className="text-3xl font-black tracking-tight mb-1 tabular-nums">{data.date}</div>
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Update Issued at {currentTime}</div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">SNAPSHOT GENERATED AT {currentTime}</div>
             </div>
         </div>
       </div>
@@ -71,12 +71,12 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
         ))}
       </div>
 
-      {/* Breadth & Commodity Pulse */}
+      {/* Advanced Stats: Breadth & Macro */}
       <div className="grid grid-cols-2 border-b border-slate-100 h-[320px]">
         <div className="p-10 border-r border-slate-100">
           <div className="flex items-center justify-between mb-8">
             <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-[0.2em]">Market Breadth (NSE)</h4>
-            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">HEALTHY SESSION</span>
+            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded tracking-widest">REAL-TIME DATA</span>
           </div>
           <div className="flex items-center gap-8">
             <div className="w-40 h-40 relative">
@@ -115,7 +115,7 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
           {[
             { label: 'Gold (MCX 10g)', data: data.commodities.gold, icon: 'fa-coins' },
             { label: 'Brent Crude ($)', data: data.commodities.oil, icon: 'fa-droplet' },
-            { label: 'USD / INR Rate', data: data.commodities.usdInr, icon: 'fa-dollar-sign' }
+            { label: 'USD / INR Spot', data: data.commodities.usdInr, icon: 'fa-dollar-sign' }
           ].map((c, i) => (
             <div key={i} className="px-10 py-[22px] flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -135,17 +135,17 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
         </div>
       </div>
 
-      {/* Top Movers Section */}
+      {/* Movers & Performance Section */}
       <div className="grid grid-cols-2 divide-x divide-slate-100 flex-1">
         <div className="p-10">
           <div className="flex items-center justify-between mb-8">
             <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest border-l-4 border-emerald-500 pl-4">Top Gainers</h4>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">NIFTY 50</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">NSE NIFTY 50</span>
           </div>
           <div className="space-y-2">
             {data.gainers.slice(0, 5).map((s, i) => (
               <div key={i} className="flex items-center justify-between py-4 border-b border-slate-50 hover:bg-emerald-50/50 rounded-xl px-3 transition-colors">
-                <div className="font-black text-slate-800 text-sm">{s.company}</div>
+                <div className="font-black text-slate-800 text-sm tracking-tight">{s.company}</div>
                 <div className="text-right">
                   <div className="text-xs font-bold text-slate-400 mb-0.5 tabular-nums">{s.price}</div>
                   <div className="text-sm font-black text-emerald-600">+{s.percentChange}</div>
@@ -157,12 +157,12 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
         <div className="p-10">
           <div className="flex items-center justify-between mb-8">
             <h4 className="font-black text-slate-800 text-[11px] uppercase tracking-widest border-l-4 border-rose-500 pl-4">Top Losers</h4>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">NIFTY 50</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">NSE NIFTY 50</span>
           </div>
           <div className="space-y-2">
             {data.losers.slice(0, 5).map((s, i) => (
               <div key={i} className="flex items-center justify-between py-4 border-b border-slate-50 hover:bg-rose-50/50 rounded-xl px-3 transition-colors">
-                <div className="font-black text-slate-800 text-sm">{s.company}</div>
+                <div className="font-black text-slate-800 text-sm tracking-tight">{s.company}</div>
                 <div className="text-right">
                   <div className="text-xs font-bold text-slate-400 mb-0.5 tabular-nums">{s.price}</div>
                   <div className="text-sm font-black text-rose-600">{s.percentChange}</div>
@@ -175,17 +175,17 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
 
       {/* Institutional Activity Block */}
       <div className="px-10 py-10 bg-slate-50/50 border-t border-slate-100">
-          <h4 className="font-black text-slate-400 text-[10px] uppercase tracking-[0.4em] mb-10 text-center">Cash Segment Activity (₹ Crores)</h4>
+          <h4 className="font-black text-slate-400 text-[10px] uppercase tracking-[0.4em] mb-10 text-center">INSTITUTIONAL CASH FLOW (₹ Cr)</h4>
           <div className="grid grid-cols-2 gap-8">
-              <div className="bg-[#0f172a] rounded-[2rem] p-8 text-white relative overflow-hidden">
+              <div className="bg-[#0f172a] rounded-[2rem] p-8 text-white relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                   <div className="flex justify-between items-start mb-8 relative z-10">
-                      <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">FII (FOREIGN)</span>
+                      <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">FII FLOWS</span>
                       <i className="fa-solid fa-landmark text-slate-700"></i>
                   </div>
                   <div className="flex justify-between items-center relative z-10">
                       <div>
-                          <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Daily Net</p>
+                          <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Today Net</p>
                           <p className={`text-3xl font-black tabular-nums ${data.fii.daily.net.includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>{data.fii.daily.net}</p>
                       </div>
                       <div className="h-10 w-[1px] bg-slate-800"></div>
@@ -195,15 +195,15 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
                       </div>
                   </div>
               </div>
-              <div className="bg-[#0f172a] rounded-[2rem] p-8 text-white relative overflow-hidden">
+              <div className="bg-[#0f172a] rounded-[2rem] p-8 text-white relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                   <div className="flex justify-between items-start mb-8 relative z-10">
-                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">DII (DOMESTIC)</span>
+                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">DII FLOWS</span>
                       <i className="fa-solid fa-vault text-slate-700"></i>
                   </div>
                   <div className="flex justify-between items-center relative z-10">
                       <div>
-                          <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Daily Net</p>
+                          <p className="text-[9px] font-black text-slate-500 uppercase mb-2">Today Net</p>
                           <p className={`text-3xl font-black tabular-nums ${data.dii.daily.net.includes('-') ? 'text-rose-400' : 'text-emerald-400'}`}>{data.dii.daily.net}</p>
                       </div>
                       <div className="h-10 w-[1px] bg-slate-800"></div>
@@ -220,33 +220,33 @@ const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
       {data.sources && data.sources.length > 0 && (
           <div className="px-10 py-4 bg-white border-t border-slate-100 flex items-center gap-4">
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <i className="fa-solid fa-circle-check text-emerald-500"></i> Data Verified
+                  <i className="fa-solid fa-circle-check text-emerald-500"></i> DATA VERIFIED
               </span>
               <div className="h-3 w-[1px] bg-slate-200"></div>
               <div className="flex flex-wrap gap-4">
                   {data.sources.slice(0, 3).map((s, i) => (
-                      <span key={i} className="text-[9px] text-blue-600 font-bold opacity-60 truncate max-w-[150px]">{s.title}</span>
+                      <span key={i} className="text-[9px] text-blue-600 font-bold opacity-60 hover:opacity-100 transition-opacity truncate max-w-[150px]">{s.title}</span>
                   ))}
               </div>
           </div>
       )}
 
-      {/* Corporate Footer (Fixed) */}
+      {/* Institutional Footer */}
       <div className="bg-slate-100 p-10 mt-auto border-t border-slate-200">
           <div className="flex items-center justify-between mb-8 pb-8 border-b border-slate-200">
             <div>
               <div className="text-slate-900 font-black text-2xl tracking-tighter mb-1 uppercase italic">Vivek Financial Focus Ltd.</div>
               <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] leading-relaxed">
-                SEBI Registered Stock Broker | NSE & BSE Member | Wealth Management
+                SEBI Registered Stock Broker | NSE & BSE Member | Professional Wealth Management
               </p>
             </div>
             <div className="text-right">
-                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Wealth Portal</div>
+                <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">ACCESS PORTAL</div>
                 <div className="text-lg font-black text-slate-900 tracking-tight">www.vivekfinancial.com</div>
             </div>
           </div>
           <p className="text-[9px] font-medium text-slate-400 text-center uppercase leading-relaxed max-w-2xl mx-auto italic opacity-60">
-            Disclaimer: Investing in securities markets is subject to market risks. Please read all related documents carefully before investing. This report is for informational purposes only.
+            Disclaimer: Stock market investments are subject to market risks. Please read all related documents carefully before investing. Data summarized automatically for client convenience.
           </p>
       </div>
     </div>

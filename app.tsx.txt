@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchMarketSnapshot } from './services/geminiService';
 import { MarketSnapshotData } from './types';
@@ -10,6 +9,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const loadData = async () => {
@@ -18,9 +18,14 @@ const App: React.FC = () => {
     try {
       const result = await fetchMarketSnapshot();
       setData(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch market data:", err);
-      setError("Failed to fetch latest market data. Please try again later.");
+      const errorMessage = err?.message || '';
+      setError(
+        errorMessage.includes('API_KEY') 
+        ? "Missing API Key. Please ensure 'API_KEY' is configured in your Environment Variables." 
+        : "The AI is having trouble connecting to live market data. Please check your internet and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -30,36 +35,25 @@ const App: React.FC = () => {
     loadData();
   }, []);
 
-  const downloadImage = async () => {
-    if (reportRef.current === null) return;
-    setExporting(true);
-    try {
-      const dataUrl = await htmlToImage.toPng(reportRef.current, { quality: 1.0, pixelRatio: 2 });
-      const link = document.createElement('a');
-      link.download = `Market_Snapshot_${data?.date.replace(/ /g, '_') || 'report'}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('oops, something went wrong!', err);
-      alert('Failed to export image');
-    } finally {
-      setExporting(false);
-    }
-  };
-
   const copyImageToClipboard = async () => {
     if (reportRef.current === null) return;
     setExporting(true);
     try {
-      const dataUrl = await htmlToImage.toPng(reportRef.current, { quality: 1.0, pixelRatio: 2 });
+      // High-resolution export for crisp text on mobile screens
+      const dataUrl = await htmlToImage.toPng(reportRef.current, { 
+        quality: 1.0, 
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff'
+      });
       const res = await fetch(dataUrl);
       const blob = await res.blob();
       const item = new ClipboardItem({ 'image/png': blob });
       await navigator.clipboard.write([item]);
-      alert('Image copied to clipboard! You can now paste it in WhatsApp.');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } catch (err) {
-      console.error('oops, something went wrong!', err);
-      alert('Failed to copy image. Your browser might not support this feature.');
+      console.error('Copy failed:', err);
+      alert('Could not copy image automatically. This may be due to browser security policies. Please ensure you are using HTTPS.');
     } finally {
       setExporting(false);
     }
@@ -67,84 +61,101 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mb-4"></div>
-        <p className="text-xl font-semibold text-gray-700">Fetching Real-time Market Data...</p>
-        <p className="text-sm text-gray-500 mt-2">Connecting to exchanges and financial indices...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        <div className="relative w-24 h-24 mb-8">
+           <div className="absolute inset-0 border-4 border-orange-100 rounded-full"></div>
+           <div className="absolute inset-0 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+        </div>
+        <p className="text-2xl font-black text-slate-800 tracking-tight uppercase">Market Intel Loading</p>
+        <p className="text-xs text-slate-400 mt-2 font-bold uppercase tracking-[0.3em]">Vivek Financial Focus Ltd.</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 text-center">
-        <div className="text-red-500 text-5xl mb-4">
-          <i className="fa-solid fa-triangle-exclamation"></i>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 text-center">
+        <div className="bg-white p-12 rounded-3xl shadow-xl max-w-lg border border-slate-200">
+          <div className="text-rose-500 text-6xl mb-6">
+            <i className="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-4 uppercase tracking-tight">System Notice</h2>
+          <p className="text-slate-500 mb-8 font-medium leading-relaxed">{error}</p>
+          <button 
+              onClick={loadData}
+              className="bg-orange-600 hover:bg-orange-700 text-white font-black py-4 px-10 rounded-2xl transition-all shadow-lg shadow-orange-500/30 uppercase tracking-widest text-sm"
+          >
+              Retry Connection
+          </button>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h2>
-        <p className="text-gray-600 mb-6">{error}</p>
-        <button 
-          onClick={loadData}
-          className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-full transition-colors"
-        >
-          Try Again
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-200 pb-12">
-      {/* Control Panel */}
-      <div className="sticky top-0 z-10 bg-white shadow-md p-4 mb-8">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="min-h-screen bg-slate-100 pb-20 font-sans">
+      {showToast && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-bounce">
+          <i className="fa-solid fa-circle-check text-xl"></i>
+          <div className="font-black uppercase tracking-widest text-sm">Copied! Paste in WhatsApp</div>
+        </div>
+      )}
+
+      {exporting && (
+        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center">
+                <i className="fa-solid fa-camera-retro text-5xl text-orange-600 mb-4 animate-pulse"></i>
+                <p className="text-xl font-black text-slate-800 uppercase tracking-tighter">Preparing High-Res Image...</p>
+            </div>
+        </div>
+      )}
+
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur shadow-sm p-4 border-b border-slate-200">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center">
-             <div className="bg-orange-600 text-white p-2 rounded-lg mr-3">
-               <i className="fa-solid fa-rocket text-xl"></i>
+             <div className="bg-[#0f172a] text-white w-10 h-10 flex items-center justify-center rounded-xl mr-3 shadow-lg">
+               <i className="fa-solid fa-chart-column text-lg"></i>
              </div>
              <div>
-               <h1 className="text-xl font-bold text-gray-800">Vivek Financial Dashboard</h1>
-               <p className="text-xs text-gray-500 font-medium">Automatic Market Snapshot Generator</p>
+               <h1 className="text-xl font-black text-slate-900 leading-none uppercase tracking-tighter">Market Snapshot Pro</h1>
+               <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Evening Intelligence System</p>
              </div>
           </div>
           
           <div className="flex items-center gap-3">
             <button 
               onClick={loadData}
-              disabled={exporting}
-              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md transition-colors border border-gray-300 disabled:opacity-50"
+              className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 font-black py-2.5 px-5 rounded-xl transition-all border border-slate-200 uppercase tracking-widest text-[10px]"
             >
-              <i className="fa-solid fa-arrows-rotate"></i>
-              Refresh Data
+              <i className="fa-solid fa-rotate"></i>
+              Refresh
             </button>
             <button 
               onClick={copyImageToClipboard}
-              disabled={exporting}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-xl shadow-lg shadow-emerald-600/20 transition-all uppercase tracking-widest text-[10px]"
             >
-              <i className="fa-solid fa-copy"></i>
+              <i className="fa-brands fa-whatsapp text-lg"></i>
               Copy for WhatsApp
-            </button>
-            <button 
-              onClick={downloadImage}
-              disabled={exporting}
-              className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors disabled:opacity-50"
-            >
-              <i className="fa-solid fa-download"></i>
-              Download PNG
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Report Container */}
-      <div className="max-w-4xl mx-auto flex justify-center px-4">
-        {data && <MarketSnapshotReport data={data} reportRef={reportRef} />}
+      <div className="max-w-5xl mx-auto mt-10 flex justify-center px-4">
+        <div className="p-4 bg-white rounded-[48px] shadow-2xl border border-slate-100">
+          {data && <MarketSnapshotReport data={data} reportRef={reportRef} />}
+        </div>
       </div>
 
-      {/* Helper Footer */}
-      <div className="max-w-4xl mx-auto mt-8 text-center text-gray-500 text-sm italic px-4">
-        <p>Tip: Click "Copy for WhatsApp" and simply press Ctrl+V (or Cmd+V) in your WhatsApp chat to send the snapshot immediately.</p>
+      <div className="max-w-md mx-auto mt-12 bg-white/50 p-6 rounded-3xl text-center text-slate-400 border border-slate-200/50">
+        <p className="font-black text-[9px] uppercase tracking-[0.3em] mb-3">Broadcast Workflow</p>
+        <div className="flex justify-center gap-6 items-center">
+            <span className="text-[10px] font-bold uppercase opacity-60">1. Click Copy</span>
+            <i className="fa-solid fa-arrow-right text-[8px] opacity-20"></i>
+            <span className="text-[10px] font-bold uppercase opacity-60">2. Open WhatsApp</span>
+            <i className="fa-solid fa-arrow-right text-[8px] opacity-20"></i>
+            <span className="text-[10px] font-black uppercase text-emerald-600">3. Paste & Send</span>
+        </div>
       </div>
     </div>
   );

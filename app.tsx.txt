@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchMarketSnapshot } from './services/geminiService';
+import { fetchMarketSnapshot } from './geminiService';
 import { MarketSnapshotData } from './types';
-import MarketSnapshotReport from './components/MarketSnapshotReport';
+import MarketSnapshotReport from './MarketSnapshotReport';
 import * as htmlToImage from 'html-to-image';
 
 const App: React.FC = () => {

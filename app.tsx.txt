@@ -1,0 +1,153 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { fetchMarketSnapshot } from './services/geminiService';
+import { MarketSnapshotData } from './types';
+import MarketSnapshotReport from './components/MarketSnapshotReport';
+import * as htmlToImage from 'html-to-image';
+
+const App: React.FC = () => {
+  const [data, setData] = useState<MarketSnapshotData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<boolean>(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchMarketSnapshot();
+      setData(result);
+    } catch (err) {
+      console.error("Failed to fetch market data:", err);
+      setError("Failed to fetch latest market data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const downloadImage = async () => {
+    if (reportRef.current === null) return;
+    setExporting(true);
+    try {
+      const dataUrl = await htmlToImage.toPng(reportRef.current, { quality: 1.0, pixelRatio: 2 });
+      const link = document.createElement('a');
+      link.download = `Market_Snapshot_${data?.date.replace(/ /g, '_') || 'report'}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('oops, something went wrong!', err);
+      alert('Failed to export image');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const copyImageToClipboard = async () => {
+    if (reportRef.current === null) return;
+    setExporting(true);
+    try {
+      const dataUrl = await htmlToImage.toPng(reportRef.current, { quality: 1.0, pixelRatio: 2 });
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const item = new ClipboardItem({ 'image/png': blob });
+      await navigator.clipboard.write([item]);
+      alert('Image copied to clipboard! You can now paste it in WhatsApp.');
+    } catch (err) {
+      console.error('oops, something went wrong!', err);
+      alert('Failed to copy image. Your browser might not support this feature.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mb-4"></div>
+        <p className="text-xl font-semibold text-gray-700">Fetching Real-time Market Data...</p>
+        <p className="text-sm text-gray-500 mt-2">Connecting to exchanges and financial indices...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 text-center">
+        <div className="text-red-500 text-5xl mb-4">
+          <i className="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h2>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <button 
+          onClick={loadData}
+          className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-full transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-200 pb-12">
+      {/* Control Panel */}
+      <div className="sticky top-0 z-10 bg-white shadow-md p-4 mb-8">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center">
+             <div className="bg-orange-600 text-white p-2 rounded-lg mr-3">
+               <i className="fa-solid fa-rocket text-xl"></i>
+             </div>
+             <div>
+               <h1 className="text-xl font-bold text-gray-800">Vivek Financial Dashboard</h1>
+               <p className="text-xs text-gray-500 font-medium">Automatic Market Snapshot Generator</p>
+             </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={loadData}
+              disabled={exporting}
+              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md transition-colors border border-gray-300 disabled:opacity-50"
+            >
+              <i className="fa-solid fa-arrows-rotate"></i>
+              Refresh Data
+            </button>
+            <button 
+              onClick={copyImageToClipboard}
+              disabled={exporting}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors disabled:opacity-50"
+            >
+              <i className="fa-solid fa-copy"></i>
+              Copy for WhatsApp
+            </button>
+            <button 
+              onClick={downloadImage}
+              disabled={exporting}
+              className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors disabled:opacity-50"
+            >
+              <i className="fa-solid fa-download"></i>
+              Download PNG
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Report Container */}
+      <div className="max-w-4xl mx-auto flex justify-center px-4">
+        {data && <MarketSnapshotReport data={data} reportRef={reportRef} />}
+      </div>
+
+      {/* Helper Footer */}
+      <div className="max-w-4xl mx-auto mt-8 text-center text-gray-500 text-sm italic px-4">
+        <p>Tip: Click "Copy for WhatsApp" and simply press Ctrl+V (or Cmd+V) in your WhatsApp chat to send the snapshot immediately.</p>
+      </div>
+    </div>
+  );
+};
+
+export default App;

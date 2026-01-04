@@ -1,214 +1,165 @@
-import React from 'react';
-import { MarketSnapshotData } from '../types';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect, useRef } from 'react';
+import { fetchMarketSnapshot } from './services/geminiService';
+import { MarketSnapshotData } from './types';
+import MarketSnapshotReport from './components/MarketSnapshotReport';
+import * as htmlToImage from 'html-to-image';
 
-interface Props {
-  data: MarketSnapshotData;
-  reportRef: React.RefObject<HTMLDivElement | null>;
-}
+const App: React.FC = () => {
+  const [data, setData] = useState<MarketSnapshotData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
-const Logo = () => (
-  <div className="bg-orange-500 p-2.5 rounded-xl shadow-lg">
-    <svg width="40" height="40" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M250 450C250 450 400 380 400 150V100H100V150C100 380 250 450 250 450Z" fill="white"/>
-      <path d="M150 280C180 275 220 260 250 200C260 180 270 170 300 170C330 170 345 185 370 195C350 190 330 185 310 185C280 185 270 195 260 215C230 280 180 300 130 305L150 280Z" fill="#F38220"/>
-    </svg>
-  </div>
-);
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchMarketSnapshot();
+      setData(result);
+    } catch (err: any) {
+      console.error("Failed to fetch market data:", err);
+      setError(err?.message || "Connection to Market Intel terminal failed. Please check your API key.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
-  const adData = [
-    { name: 'Advances', value: data.advanceDecline.advances, color: '#10b981' },
-    { name: 'Declines', value: data.advanceDecline.declines, color: '#ef4444' }
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const currentTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const copyImageToClipboard = async () => {
+    if (reportRef.current === null) return;
+    setExporting(true);
+    try {
+      // 3x pixel ratio ensures text is sharp on high-DPI smartphone screens
+      const dataUrl = await htmlToImage.toPng(reportRef.current, { 
+        quality: 1, 
+        pixelRatio: 3,
+        backgroundColor: '#ffffff'
+      });
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const item = new ClipboardItem({ 'image/png': blob });
+      await navigator.clipboard.write([item]);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+      alert('Unable to copy automatically. Please ensure you are using a secure (HTTPS) connection or try using Chrome/Edge on Desktop.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
+        <div className="relative w-24 h-24 mb-8">
+           <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
+           <div className="absolute inset-0 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-black text-slate-900 tracking-tighter uppercase mb-1">Market Intel Terminal</p>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em]">Vivek Financial Focus Ltd.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
+        <div className="bg-white p-12 rounded-[2.5rem] shadow-2xl max-w-md border border-slate-200">
+          <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i className="fa-solid fa-triangle-exclamation text-2xl"></i>
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tighter">System Offline</h2>
+          <p className="text-slate-500 mb-8 font-medium leading-relaxed">{error}</p>
+          <button 
+              onClick={loadData}
+              className="w-full bg-[#0f172a] hover:bg-slate-800 text-white font-black py-4 px-8 rounded-2xl transition-all shadow-xl uppercase tracking-widest text-[10px]"
+          >
+              Attempt Reconnect
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div 
-      ref={reportRef}
-      className="w-[800px] bg-white overflow-hidden relative flex flex-col shadow-sm"
-      style={{ minHeight: '1150px' }}
-    >
-      {/* Header */}
-      <div className="bg-[#0f172a] text-white p-10 border-b-[6px] border-orange-500">
-        <div className="flex justify-between items-start">
-            <div className="flex items-center gap-5">
-                <Logo />
-                <div>
-                    <h1 className="text-4xl font-black uppercase tracking-tighter leading-none">Vivek Financial</h1>
-                    <p className="text-[10px] font-bold tracking-[0.4em] text-orange-400 uppercase mt-2 opacity-80">Focus on your success</p>
-                </div>
-            </div>
-            <div className="text-right">
-                <div className="bg-orange-600 text-white px-3 py-1 text-[9px] font-black uppercase tracking-widest inline-block mb-2 rounded">DAILY MARKET PULSE</div>
-                <div className="text-2xl font-black">{data.date}</div>
-                <div className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Closing Report • {currentTime}</div>
-            </div>
+    <div className="min-h-screen bg-slate-100 pb-20 font-sans">
+      {showToast && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-[#0f172a] text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 animate-bounce">
+          <i className="fa-solid fa-circle-check text-emerald-400"></i>
+          <div className="font-black uppercase tracking-widest text-[10px]">Copied! Open WhatsApp & Paste</div>
         </div>
-      </div>
+      )}
 
-      {/* Main Indices */}
-      <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
-        {[
-          { label: 'NIFTY 50', val: data.indices.nifty50 },
-          { label: 'SENSEX', val: data.indices.sensex },
-          { label: 'NIFTY BANK', val: data.indices.niftyBank }
-        ].map((index, i) => (
-          <div key={i} className="p-8 bg-slate-50/30">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{index.label}</div>
-            <div className="text-3xl font-black text-slate-900 leading-none mb-3 tabular-nums">{index.val.value}</div>
-            <div className={`flex items-center gap-1.5 font-bold text-sm ${index.val.isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                <span>{index.val.isPositive ? '▲' : '▼'}</span>
-                {index.val.change} ({index.val.percentChange})
-            </div>
+      {exporting && (
+        <div className="fixed inset-0 z-50 bg-[#0f172a]/90 backdrop-blur-md flex flex-col items-center justify-center text-white">
+            <i className="fa-solid fa-camera-retro text-5xl text-orange-500 mb-6 animate-pulse"></i>
+            <p className="text-xl font-black uppercase tracking-tighter">Generating High-Res Report...</p>
+        </div>
+      )}
+
+      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+             <div className="bg-[#0f172a] text-white w-10 h-10 flex items-center justify-center rounded-xl shadow-lg">
+               <i className="fa-solid fa-bolt text-orange-400"></i>
+             </div>
+             <div>
+               <h1 className="text-xl font-black text-slate-900 leading-none uppercase tracking-tighter">SnapReport Pro</h1>
+               <p className="text-[8px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Vivek Financial Intelligence</p>
+             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Breadth & Commodities */}
-      <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100">
-        <div className="p-8">
-          <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest mb-6">Market Breadth (NSE)</h4>
-          <div className="flex items-center justify-between gap-6">
-            <div className="w-32 h-32 relative">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie data={adData} innerRadius={40} outerRadius={55} paddingAngle={8} dataKey="value" stroke="none">
-                            {adData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                        </Pie>
-                    </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[10px] font-black text-slate-800 uppercase leading-none">{data.advanceDecline.advancePercent}</span>
-                    <span className="text-[7px] font-bold text-slate-400 uppercase mt-1">ADVANCE</span>
-                </div>
-            </div>
-            <div className="flex-1 space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                    <span className="text-[10px] font-black text-emerald-600 uppercase">Advances</span>
-                    <span className="text-xl font-black text-slate-900">{data.advanceDecline.advances}</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-slate-50 pb-2">
-                    <span className="text-[10px] font-black text-rose-600 uppercase">Declines</span>
-                    <span className="text-xl font-black text-slate-900">{data.advanceDecline.declines}</span>
-                </div>
-            </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={loadData}
+              className="bg-white hover:bg-slate-50 text-slate-900 font-black py-2.5 px-5 rounded-xl transition-all border border-slate-200 uppercase tracking-widest text-[10px]"
+            >
+              <i className="fa-solid fa-rotate mr-2"></i>
+              Sync Data
+            </button>
+            <button 
+              onClick={copyImageToClipboard}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-xl shadow-lg shadow-emerald-600/20 transition-all uppercase tracking-widest text-[10px] flex items-center gap-2"
+            >
+              <i className="fa-brands fa-whatsapp text-lg"></i>
+              Copy for WhatsApp
+            </button>
           </div>
         </div>
+      </nav>
 
-        <div className="divide-y divide-slate-100">
-          {[
-            { label: 'Gold (10g)', data: data.commodities.gold, icon: 'fa-coins' },
-            { label: 'Brent Crude', data: data.commodities.oil, icon: 'fa-droplet' },
-            { label: 'USD / INR', data: data.commodities.usdInr, icon: 'fa-dollar-sign' }
-          ].map((c, i) => (
-            <div key={i} className="px-8 py-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <i className={`fa-solid ${c.icon} text-slate-300 text-xs`}></i>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{c.label}</span>
-              </div>
-              <div className="text-right">
-                <div className="font-black text-slate-900 text-xl">{c.data.value}</div>
-                <div className={`text-[9px] font-bold ${c.data.isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {c.data.isPositive ? '▲' : '▼'} {c.data.percentChange}
-                </div>
-              </div>
-            </div>
-          ))}
+      <main className="max-w-6xl mx-auto mt-12 flex flex-col items-center px-6">
+        <div className="p-4 bg-white rounded-[3rem] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.1)] border border-slate-100">
+          {data && <MarketSnapshotReport data={data} reportRef={reportRef} />}
         </div>
-      </div>
-
-      {/* Gainers & Losers */}
-      <div className="grid grid-cols-2 divide-x divide-slate-100 flex-1">
-        <div className="p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="bg-emerald-500 w-1 h-4 rounded-full"></div>
-            <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest">Top Gainers</h4>
-          </div>
-          <table className="w-full text-[12px]">
-            <tbody className="divide-y divide-slate-50">
-              {data.gainers.slice(0, 5).map((s, i) => (
-                <tr key={i}>
-                  <td className="py-3.5 font-black text-slate-900">{s.company}</td>
-                  <td className="text-right py-3.5 font-bold text-slate-500">{s.price}</td>
-                  <td className="text-right py-3.5 font-black text-emerald-600">+{s.percentChange}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="bg-rose-500 w-1 h-4 rounded-full"></div>
-            <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest">Top Losers</h4>
-          </div>
-          <table className="w-full text-[12px]">
-            <tbody className="divide-y divide-slate-50">
-              {data.losers.slice(0, 5).map((s, i) => (
-                <tr key={i}>
-                  <td className="py-3.5 font-black text-slate-900">{s.company}</td>
-                  <td className="text-right py-3.5 font-bold text-slate-500">{s.price}</td>
-                  <td className="text-right py-3.5 font-black text-rose-600">{s.percentChange}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* FII/DII Section */}
-      <div className="p-8 bg-slate-50 border-t border-slate-100">
-          <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest mb-6">Institutional Activity (Cash ₹ Cr)</h4>
-          <div className="grid grid-cols-2 gap-6">
-              <div className="bg-white p-5 rounded-xl border border-slate-200">
-                  <div className="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest text-center">Net Daily Flow</div>
-                  <div className="flex justify-around">
-                      <div className="text-center">
-                          <div className="text-[10px] font-bold text-slate-500 mb-1">FII</div>
-                          <div className={`text-xl font-black ${data.fii.daily.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.fii.daily.net}</div>
-                      </div>
-                      <div className="text-center">
-                          <div className="text-[10px] font-bold text-slate-500 mb-1">DII</div>
-                          <div className={`text-xl font-black ${data.dii.daily.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.dii.daily.net}</div>
-                      </div>
-                  </div>
-              </div>
-              <div className="bg-white p-5 rounded-xl border border-slate-200">
-                  <div className="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest text-center">Month Till Date</div>
-                  <div className="flex justify-around">
-                      <div className="text-center">
-                          <div className="text-[10px] font-bold text-slate-500 mb-1">FII MTD</div>
-                          <div className={`text-xl font-black ${data.fii.mtd.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.fii.mtd.net}</div>
-                      </div>
-                      <div className="text-center">
-                          <div className="text-[10px] font-bold text-slate-500 mb-1">DII MTD</div>
-                          <div className={`text-xl font-black ${data.dii.mtd.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.dii.mtd.net}</div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-
-      {/* Footer */}
-      <div className="bg-[#0f172a] text-white p-8">
-          <div className="flex items-center justify-between opacity-80 mb-6">
-            <div>
-              <div className="text-orange-500 font-black text-xl tracking-tighter mb-1 uppercase">Vivek Financial Focus Ltd.</div>
-              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                SEBI: INZ000276333 | NSE/BSE Member | CDSL DP: 473-2020
-              </p>
+        
+        <div className="mt-12 flex items-center gap-8 opacity-20 grayscale pointer-events-none">
+            <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border-2 border-slate-900 rounded-full flex items-center justify-center text-[10px] font-black">1</div>
+                <span className="text-[10px] font-black uppercase">Copy</span>
             </div>
-            <div className="text-right text-[10px] font-black uppercase tracking-widest">
-              www.vivekfinancial.com
+            <i className="fa-solid fa-chevron-right text-[10px]"></i>
+            <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border-2 border-slate-900 rounded-full flex items-center justify-center text-[10px] font-black">2</div>
+                <span className="text-[10px] font-black uppercase">WhatsApp</span>
             </div>
-          </div>
-          <p className="text-[8px] font-medium text-slate-500 text-center uppercase leading-relaxed max-w-xl mx-auto opacity-50">
-            Disclaimer: Stock market investments are subject to market risks. Report is AI-generated for informational purposes only. Vivek Financial is not responsible for data variations.
-          </p>
-      </div>
+            <i className="fa-solid fa-chevron-right text-[10px]"></i>
+            <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border-2 border-slate-900 rounded-full flex items-center justify-center text-[10px] font-black">3</div>
+                <span className="text-[10px] font-black uppercase">Paste</span>
+            </div>
+        </div>
+      </main>
     </div>
   );
 };
 
-export default MarketSnapshotReport;
+export default App;

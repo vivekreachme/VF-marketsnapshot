@@ -4,246 +4,245 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface Props {
   data: MarketSnapshotData;
-  reportRef: React.RefObject<HTMLDivElement>;
+  reportRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const Logo = () => (
-  <svg width="64" height="64" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg">
-    <path d="M250 450C250 450 400 380 400 150V100H100V150C100 380 250 450 250 450Z" fill="#F38220"/>
-    <path d="M150 280C180 275 220 260 250 200C260 180 270 170 300 170C330 170 345 185 370 195C350 190 330 185 310 185C280 185 270 195 260 215C230 280 180 300 130 305L150 280Z" fill="white"/>
-    <circle cx="315" cy="188" r="8" fill="#F38220"/>
-  </svg>
+  <div className="bg-orange-500 p-2 rounded-xl shadow-inner">
+    <svg width="48" height="48" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M250 450C250 450 400 380 400 150V100H100V150C100 380 250 450 250 450Z" fill="white"/>
+      <path d="M150 280C180 275 220 260 250 200C260 180 270 170 300 170C330 170 345 185 370 195C350 190 330 185 310 185C280 185 270 195 260 215C230 280 180 300 130 305L150 280Z" fill="#F38220"/>
+    </svg>
+  </div>
 );
 
 const MarketSnapshotReport: React.FC<Props> = ({ data, reportRef }) => {
   const adData = [
-    { name: 'Advances', value: data.advanceDecline.advances, color: '#059669' },
-    { name: 'Declines', value: data.advanceDecline.declines, color: '#DC2626' }
+    { name: 'Advances', value: data.advanceDecline.advances, color: '#10b981' },
+    { name: 'Declines', value: data.advanceDecline.declines, color: '#ef4444' }
   ];
 
-  const currentTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const currentTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   return (
     <div 
       ref={reportRef}
-      className="w-[800px] bg-white border border-gray-200 overflow-hidden shadow-2xl relative flex flex-col"
-      style={{ minHeight: '1100px' }}
+      className="report-font w-[800px] bg-white border border-slate-200 overflow-hidden shadow-2xl relative flex flex-col"
+      style={{ minHeight: '1200px' }}
     >
-      {/* Premium Header */}
-      <div className="bg-[#0f172a] text-white p-8 border-b-[10px] border-orange-500 relative overflow-hidden shrink-0">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div className="relative flex justify-between items-center mb-6">
-            <div className="flex items-center gap-5">
+      {/* Institutional Header */}
+      <div className="bg-[#0f172a] text-white p-10 relative overflow-hidden shrink-0 border-b-[8px] border-orange-500">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full -mr-48 -mt-48 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-1 bg-gradient-to-r from-orange-500 to-transparent"></div>
+        
+        <div className="relative flex justify-between items-start">
+            <div className="flex items-center gap-6">
                 <Logo />
                 <div>
-                    <h1 className="text-5xl font-extrabold uppercase tracking-tighter text-white leading-none">Vivek Financial</h1>
-                    <p className="text-sm font-bold tracking-[0.3em] text-orange-400 mt-2 uppercase">Your Success, Our Focus</p>
+                    <h1 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">Vivek Financial</h1>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="h-0.5 w-8 bg-orange-500"></span>
+                      <p className="text-[11px] font-black tracking-[0.4em] text-orange-400 uppercase">Focus on your success</p>
+                    </div>
                 </div>
             </div>
             <div className="text-right">
-                <div className="bg-orange-600 text-white px-5 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] inline-block mb-2 rounded-sm shadow-lg">MARKET INTELLIGENCE</div>
-                <div className="text-3xl font-black text-white">{data.date}</div>
-                <div className="text-xs font-bold text-gray-400 mt-1 uppercase">Generated at {currentTime} IST</div>
+                <div className="bg-orange-600 text-white px-4 py-1 text-[9px] font-black uppercase tracking-[0.2em] inline-block mb-3 rounded-full">DAILY INTELLIGENCE REPORT</div>
+                <div className="text-3xl font-black text-white tracking-tight">{data.date}</div>
+                <div className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Post-Market Summary • {currentTime} IST</div>
             </div>
         </div>
       </div>
 
-      {/* Main Indices Bar */}
-      <div className="grid grid-cols-3 gap-0 border-b border-gray-100 shadow-sm shrink-0">
+      {/* Primary Market Indicators */}
+      <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 bg-slate-50/30 shrink-0">
         {[
           { label: 'NIFTY 50', val: data.indices.nifty50 },
-          { label: 'S&P BSE SENSEX', val: data.indices.sensex },
+          { label: 'SENSEX', val: data.indices.sensex },
           { label: 'NIFTY BANK', val: data.indices.niftyBank }
         ].map((index, i) => (
-          <div key={i} className={`p-8 ${i < 2 ? 'border-r border-gray-100' : ''} bg-slate-50/50`}>
-            <div className="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2">{index.label}</div>
-            <div className="text-4xl font-black text-slate-900 leading-none mb-3 tabular-nums">{index.val.value}</div>
-            <div className={`flex items-center gap-1.5 font-extrabold text-sm ${index.val.isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                <span className="text-lg leading-none">{index.val.isPositive ? '▲' : '▼'}</span>
-                {index.val.change} <span className="opacity-80">({index.val.percentChange})</span>
+          <div key={i} className="p-10">
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">{index.label}</div>
+            <div className="text-4xl font-black text-slate-900 leading-none mb-4 tabular-nums tracking-tighter">{index.val.value}</div>
+            <div className={`flex items-center gap-2 font-black text-sm ${index.val.isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className="text-lg">{index.val.isPositive ? '▲' : '▼'}</span>
+                {index.val.change} <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] ml-1">{index.val.percentChange}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Breadth & Macro */}
-      <div className="grid grid-cols-2 gap-0 border-b border-gray-100 shrink-0">
-        <div className="p-8 border-r border-gray-100 bg-white">
-          <div className="flex items-center justify-between mb-6">
-            <h4 className="font-black text-slate-800 text-xs uppercase tracking-[0.15em]">Market Breadth <span className="text-slate-400 ml-1">(NSE)</span></h4>
-            <div className="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded">LIVE RATIO</div>
+      {/* Breadth & Macro Pulse */}
+      <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100 shrink-0">
+        <div className="p-10">
+          <div className="flex items-center justify-between mb-8">
+            <h4 className="font-black text-slate-800 text-xs uppercase tracking-[0.2em]">Market Breadth <span className="text-slate-400 ml-1 font-bold">(NSE)</span></h4>
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="w-36 h-36 relative">
+          <div className="flex items-center justify-between gap-10">
+            <div className="w-40 h-40 relative">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                        <Pie data={adData} innerRadius={45} outerRadius={60} paddingAngle={8} dataKey="value" stroke="none">
+                        <Pie data={adData} innerRadius={50} outerRadius={65} paddingAngle={10} dataKey="value" stroke="none">
                             {adData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                         </Pie>
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[10px] font-black text-slate-300 uppercase leading-none">Market</span>
-                    <span className="text-[10px] font-black text-slate-300 uppercase">Action</span>
+                    <span className="text-[11px] font-black text-slate-800 uppercase leading-none">{data.advanceDecline.advancePercent}</span>
+                    <span className="text-[8px] font-black text-slate-400 uppercase mt-1">Advances</span>
                 </div>
             </div>
-            <div className="space-y-6 pr-6 text-right">
-                <div>
-                    <div className="text-3xl font-black text-emerald-600 leading-none tabular-nums">{data.advanceDecline.advances}</div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Advances</div>
+            <div className="flex-1 space-y-6">
+                <div className="flex justify-between items-end border-b border-slate-100 pb-2">
+                    <div>
+                      <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Advances</div>
+                      <div className="text-3xl font-black text-slate-900 leading-none mt-1">{data.advanceDecline.advances}</div>
+                    </div>
+                    <div className="w-12 h-1 bg-emerald-500 mb-1"></div>
                 </div>
-                <div>
-                    <div className="text-3xl font-black text-rose-600 leading-none tabular-nums">{data.advanceDecline.declines}</div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Declines</div>
+                <div className="flex justify-between items-end border-b border-slate-100 pb-2">
+                    <div>
+                      <div className="text-[9px] font-black text-rose-600 uppercase tracking-widest">Declines</div>
+                      <div className="text-3xl font-black text-slate-900 leading-none mt-1">{data.advanceDecline.declines}</div>
+                    </div>
+                    <div className="w-12 h-1 bg-rose-500 mb-1"></div>
                 </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-50/30 grid grid-rows-3">
+        <div className="bg-slate-50/20 divide-y divide-slate-100">
           {[
-            { label: 'Gold 999 (10g)', data: data.commodities.gold, icon: 'fa-coins' },
-            { label: 'Brent Crude ($)', data: data.commodities.oil, icon: 'fa-oil-can' },
-            { label: 'USD/INR (Spot)', data: data.commodities.usdInr, icon: 'fa-money-bill-transfer' }
+            { label: 'Gold (MCX 10g)', data: data.commodities.gold, icon: 'fa-coins' },
+            { label: 'Brent Crude ($)', data: data.commodities.oil, icon: 'fa-droplet' },
+            { label: 'USD / INR Spot', data: data.commodities.usdInr, icon: 'fa-sack-dollar' }
           ].map((c, i) => (
-            <div key={i} className={`px-8 flex items-center justify-between ${i < 2 ? 'border-b border-gray-100' : ''}`}>
-              <div className="flex items-center gap-3">
-                <i className={`fa-solid ${c.icon} text-slate-300 text-xs`}></i>
-                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">{c.label}</span>
+            <div key={i} className="px-10 py-7 flex items-center justify-between hover:bg-white transition-colors">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+                  <i className={`fa-solid ${c.icon} text-xs`}></i>
+                </div>
+                <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{c.label}</span>
               </div>
               <div className="text-right">
-                <span className="font-black text-slate-900 text-xl mr-3 tabular-nums">{c.data.value}</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${c.data.isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                <div className="font-black text-slate-900 text-2xl tabular-nums tracking-tighter">{c.data.value}</div>
+                <div className={`text-[9px] font-black mt-1 ${c.data.isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {c.data.isPositive ? '▲' : '▼'} {c.data.percentChange}
-                </span>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Gainers & Losers */}
-      <div className="grid grid-cols-2 gap-0 border-b border-gray-100 shrink-0">
-        <div className="p-8 bg-emerald-50/20 border-r border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-emerald-600 w-1.5 h-6 rounded-full shadow-sm"></div>
-            <h4 className="font-black text-emerald-900 text-xs uppercase tracking-[0.2em]">Top Nifty 50 Gainers</h4>
-          </div>
-          <table className="w-full text-[13px]">
-            <thead className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">
-              <tr className="border-b border-emerald-100">
-                <th className="text-left py-2 font-black">SYMBOL</th>
-                <th className="text-right py-2 font-black">LTP</th>
-                <th className="text-right py-2 font-black">CHG%</th>
-              </tr>
-            </thead>
-            <tbody className="font-bold text-slate-700">
-              {data.gainers.map((s, i) => (
-                <tr key={i} className="border-b border-emerald-50/50 hover:bg-emerald-100/30 transition-colors">
-                  <td className="py-3 font-black text-slate-900">{s.company}</td>
-                  <td className="text-right py-3 tabular-nums">{s.price}</td>
-                  <td className="text-right py-3 text-emerald-600 tabular-nums">+{s.percentChange}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="p-8 bg-rose-50/20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-rose-600 w-1.5 h-6 rounded-full shadow-sm"></div>
-            <h4 className="font-black text-rose-900 text-xs uppercase tracking-[0.2em]">Top Nifty 50 Losers</h4>
-          </div>
-          <table className="w-full text-[13px]">
-            <thead className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">
-              <tr className="border-b border-rose-100">
-                <th className="text-left py-2 font-black">SYMBOL</th>
-                <th className="text-right py-2 font-black">LTP</th>
-                <th className="text-right py-2 font-black">CHG%</th>
-              </tr>
-            </thead>
-            <tbody className="font-bold text-slate-700">
-              {data.losers.map((s, i) => (
-                <tr key={i} className="border-b border-rose-50/50 hover:bg-rose-100/30 transition-colors">
-                  <td className="py-3 font-black text-slate-900">{s.company}</td>
-                  <td className="text-right py-3 tabular-nums">{s.price}</td>
-                  <td className="text-right py-3 text-rose-600 tabular-nums">{s.percentChange}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Institutional Activity */}
-      <div className="p-8 bg-white shrink-0">
+      {/* Gainers & Losers Tables */}
+      <div className="grid grid-cols-2 divide-x divide-slate-100 shrink-0">
+        <div className="p-10">
           <div className="flex items-center gap-3 mb-8">
-            <div className="bg-orange-500 w-1.5 h-6 rounded-full shadow-sm"></div>
-            <h4 className="font-black text-slate-800 text-xs uppercase tracking-[0.2em]">Institutional Flows <span className="text-slate-400 ml-1">(Cash Seg. ₹ Cr)</span></h4>
+            <div className="bg-emerald-500 w-1.5 h-6 rounded-full"></div>
+            <h4 className="font-black text-slate-800 text-xs uppercase tracking-[0.2em]">NSE Top Gainers</h4>
           </div>
-          <div className="grid grid-cols-2 gap-8">
-              <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 relative shadow-sm">
-                  <div className="absolute top-0 right-0 mt-3 mr-4 text-[8px] font-black text-slate-300 uppercase tracking-widest">DAILY NET</div>
-                  <div className="text-[10px] font-black text-orange-500 uppercase mb-5 tracking-widest">Today's Transactions</div>
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-200/50 pb-2">
-                      <span className="text-xs font-bold text-slate-500 uppercase">FII Net</span>
-                      <span className={`text-2xl font-black tabular-nums ${data.fii.daily.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.fii.daily.net}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500 uppercase">DII Net</span>
-                      <span className={`text-2xl font-black tabular-nums ${data.dii.daily.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.dii.daily.net}</span>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                <th className="text-left py-3">SYMBOL</th>
+                <th className="text-right py-3">PRICE</th>
+                <th className="text-right py-3">CHG %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {data.gainers.map((s, i) => (
+                <tr key={i} className="group hover:bg-emerald-50/30">
+                  <td className="py-4 font-black text-slate-900">{s.company}</td>
+                  <td className="text-right py-4 font-bold text-slate-600 tabular-nums">{s.price}</td>
+                  <td className="text-right py-4 font-black text-emerald-600 tabular-nums">+{s.percentChange}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-10">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="bg-rose-500 w-1.5 h-6 rounded-full"></div>
+            <h4 className="font-black text-slate-800 text-xs uppercase tracking-[0.2em]">NSE Top Losers</h4>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                <th className="text-left py-3">SYMBOL</th>
+                <th className="text-right py-3">PRICE</th>
+                <th className="text-right py-3">CHG %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {data.losers.map((s, i) => (
+                <tr key={i} className="group hover:bg-rose-50/30">
+                  <td className="py-4 font-black text-slate-900">{s.company}</td>
+                  <td className="text-right py-4 font-bold text-slate-600 tabular-nums">{s.price}</td>
+                  <td className="text-right py-4 font-black text-rose-600 tabular-nums">{s.percentChange}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Institutional Activity - Final Section */}
+      <div className="p-10 bg-slate-50/50 mt-auto border-t border-slate-100">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-500 w-1.5 h-6 rounded-full"></div>
+              <h4 className="font-black text-slate-800 text-xs uppercase tracking-[0.2em]">Institutional Flow <span className="text-slate-400 ml-1 font-bold">(Cash Seg. ₹ Cr)</span></h4>
+            </div>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Source: NSE/BSE Provisional</span>
+          </div>
+          <div className="grid grid-cols-2 gap-10">
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative">
+                  <div className="absolute top-4 right-6 text-[8px] font-black text-slate-300 uppercase tracking-widest">Today Net</div>
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">FII Cash</span>
+                        <span className={`text-3xl font-black tabular-nums ${data.fii.daily.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.fii.daily.net}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">DII Cash</span>
+                        <span className={`text-3xl font-black tabular-nums ${data.dii.daily.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.dii.daily.net}</span>
+                    </div>
                   </div>
               </div>
-              <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 relative shadow-sm">
-                  <div className="absolute top-0 right-0 mt-3 mr-4 text-[8px] font-black text-slate-300 uppercase tracking-widest">MTD ACCUM.</div>
-                  <div className="text-[10px] font-black text-orange-500 uppercase mb-5 tracking-widest">Month-to-Date Flow</div>
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-200/50 pb-2">
-                      <span className="text-xs font-bold text-slate-500 uppercase">FII MTD</span>
-                      <span className={`text-2xl font-black tabular-nums ${data.fii.mtd.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.fii.mtd.net}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500 uppercase">DII MTD</span>
-                      <span className={`text-2xl font-black tabular-nums ${data.dii.mtd.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.dii.mtd.net}</span>
+              <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative">
+                  <div className="absolute top-4 right-6 text-[8px] font-black text-slate-300 uppercase tracking-widest">MTD Acc.</div>
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">FII MTD</span>
+                        <span className={`text-3xl font-black tabular-nums ${data.fii.mtd.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.fii.mtd.net}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">DII MTD</span>
+                        <span className={`text-3xl font-black tabular-nums ${data.dii.mtd.net.includes('-') ? 'text-rose-600' : 'text-emerald-600'}`}>{data.dii.mtd.net}</span>
+                    </div>
                   </div>
               </div>
           </div>
       </div>
-
-      {/* Grounding Sources (Mandatory for Search) */}
-      {data.sources && data.sources.length > 0 && (
-        <div className="px-8 py-4 bg-slate-50 border-t border-gray-100 shrink-0">
-          <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Verified Data Sources:</div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            {data.sources.slice(0, 3).map((source, i) => (
-              <a 
-                key={i} 
-                href={source.uri} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[9px] font-bold text-orange-600 hover:text-orange-700 transition-colors"
-              >
-                {source.title.length > 30 ? source.title.substring(0, 30) + '...' : source.title}
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Corporate Footer */}
-      <div className="mt-auto bg-[#0f172a] text-white p-8 shrink-0">
-          <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-6">
+      <div className="bg-[#0f172a] text-white p-10 shrink-0">
+          <div className="flex items-end justify-between border-b border-slate-800 pb-8 mb-8">
             <div>
-              <div className="text-orange-500 font-black text-2xl uppercase tracking-tighter mb-1">Vivek Financial Focus Ltd.</div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
-                SEBI Reg: INZ000276333 | NSE/BSE | NSDL DP: 473-2020 | ARN 19901
+              <div className="text-orange-500 font-black text-3xl uppercase tracking-tighter mb-2">Vivek Financial Focus Ltd.</div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed opacity-70">
+                SEBI: INZ000276333 | NSE/BSE | CDSL DP: 473-2020 | ARN 19901
               </p>
             </div>
             <div className="text-right">
-                <div className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Contact Wealth Desk</div>
-                <div className="text-sm font-bold text-white tracking-widest">www.vivekfinancial.com</div>
+                <div className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2">wealth desk connect</div>
+                <div className="text-lg font-black text-white tracking-tighter">www.vivekfinancial.com</div>
             </div>
           </div>
-          <div className="text-[9px] font-medium text-slate-500 uppercase leading-relaxed text-center italic">
-            Disclaimer: Stock market investments are subject to market risks. Read all related documents carefully before investing. This report is generated by AI for informational purposes only and does not constitute financial advice or trade recommendations. Vivek Financial Focus Ltd. is not liable for any losses arising from the use of this data.
+          <div className="text-[9px] font-bold text-slate-500 uppercase leading-relaxed text-center opacity-40 italic max-w-2xl mx-auto">
+            Disclaimer: Investments are subject to market risks. AI-generated summary for information only. Vivek Financial is not liable for data inaccuracies or trade decisions.
           </div>
       </div>
     </div>

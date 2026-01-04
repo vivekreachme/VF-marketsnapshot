@@ -20,12 +20,7 @@ const App: React.FC = () => {
       setData(result);
     } catch (err: any) {
       console.error("Failed to fetch market data:", err);
-      const errorMessage = err?.message || '';
-      setError(
-        errorMessage.includes('API_KEY') 
-        ? "Missing API Key. Please ensure 'API_KEY' is configured in your Environment Variables." 
-        : "The AI is having trouble connecting to live market data. Please check your internet and try again."
-      );
+      setError(err?.message || "Failed to fetch market intelligence. Please check your API key.");
     } finally {
       setLoading(false);
     }
@@ -39,10 +34,10 @@ const App: React.FC = () => {
     if (reportRef.current === null) return;
     setExporting(true);
     try {
-      // High-resolution export for crisp text on mobile screens
+      // Use higher pixel ratio for mobile clarity
       const dataUrl = await htmlToImage.toPng(reportRef.current, { 
-        quality: 1.0, 
-        pixelRatio: 2.5,
+        quality: 1, 
+        pixelRatio: 3,
         backgroundColor: '#ffffff'
       });
       const res = await fetch(dataUrl);
@@ -52,8 +47,8 @@ const App: React.FC = () => {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } catch (err) {
-      console.error('Copy failed:', err);
-      alert('Could not copy image automatically. This may be due to browser security policies. Please ensure you are using HTTPS.');
+      console.error('Clipboard copy failed:', err);
+      alert('Unable to copy directly. Try downloading the image or ensure you are on a secure (HTTPS) connection.');
     } finally {
       setExporting(false);
     }
@@ -61,31 +56,33 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="relative w-24 h-24 mb-8">
-           <div className="absolute inset-0 border-4 border-orange-100 rounded-full"></div>
-           <div className="absolute inset-0 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f8fafc]">
+        <div className="relative w-32 h-32 mb-10">
+           <div className="absolute inset-0 border-[6px] border-slate-200 rounded-full"></div>
+           <div className="absolute inset-0 border-[6px] border-orange-500 rounded-full border-t-transparent animate-spin"></div>
         </div>
-        <p className="text-2xl font-black text-slate-800 tracking-tight uppercase">Market Intel Loading</p>
-        <p className="text-xs text-slate-400 mt-2 font-bold uppercase tracking-[0.3em]">Vivek Financial Focus Ltd.</p>
+        <div className="text-center">
+          <p className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-2">Automating Intelligence</p>
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.4em]">Vivek Financial Terminal</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 text-center">
-        <div className="bg-white p-12 rounded-3xl shadow-xl max-w-lg border border-slate-200">
-          <div className="text-rose-500 text-6xl mb-6">
-            <i className="fa-solid fa-triangle-exclamation"></i>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f8fafc] p-6 text-center">
+        <div className="bg-white p-14 rounded-[40px] shadow-2xl max-w-lg border border-slate-200">
+          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-8">
+            <i className="fa-solid fa-triangle-exclamation text-3xl"></i>
           </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-4 uppercase tracking-tight">System Notice</h2>
-          <p className="text-slate-500 mb-8 font-medium leading-relaxed">{error}</p>
+          <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tighter">Connection Error</h2>
+          <p className="text-slate-500 mb-10 font-medium leading-relaxed">{error}</p>
           <button 
               onClick={loadData}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-black py-4 px-10 rounded-2xl transition-all shadow-lg shadow-orange-500/30 uppercase tracking-widest text-sm"
+              className="w-full bg-[#0f172a] hover:bg-slate-800 text-white font-black py-5 px-10 rounded-2xl transition-all shadow-xl uppercase tracking-widest text-xs"
           >
-              Retry Connection
+              Retry Intelligence Sync
           </button>
         </div>
       </div>
@@ -93,46 +90,47 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 pb-20 font-sans">
+    <div className="min-h-screen bg-slate-50 pb-20 overflow-x-hidden">
+      {/* Dynamic Toast */}
       {showToast && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-bounce">
-          <i className="fa-solid fa-circle-check text-xl"></i>
-          <div className="font-black uppercase tracking-widest text-sm">Copied! Paste in WhatsApp</div>
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-50 bg-[#0f172a] text-white px-10 py-5 rounded-full shadow-2xl flex items-center gap-4 animate-bounce">
+          <i className="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+          <div className="font-black uppercase tracking-widest text-xs">Ready to Paste in WhatsApp</div>
         </div>
       )}
 
+      {/* Processing Overlay */}
       {exporting && (
-        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center">
-                <i className="fa-solid fa-camera-retro text-5xl text-orange-600 mb-4 animate-pulse"></i>
-                <p className="text-xl font-black text-slate-800 uppercase tracking-tighter">Preparing High-Res Image...</p>
-            </div>
+        <div className="fixed inset-0 z-50 bg-[#0f172a]/80 backdrop-blur-md flex flex-col items-center justify-center text-white">
+            <i className="fa-solid fa-camera-retro text-6xl text-orange-500 mb-6 animate-pulse"></i>
+            <p className="text-2xl font-black uppercase tracking-tighter">Generating High-Res Export...</p>
         </div>
       )}
 
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur shadow-sm p-4 border-b border-slate-200">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Control Navigation */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200 p-5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center">
-             <div className="bg-[#0f172a] text-white w-10 h-10 flex items-center justify-center rounded-xl mr-3 shadow-lg">
-               <i className="fa-solid fa-chart-column text-lg"></i>
+             <div className="bg-[#0f172a] text-white w-12 h-12 flex items-center justify-center rounded-2xl mr-4 shadow-xl">
+               <i className="fa-solid fa-bolt-lightning text-xl text-orange-400"></i>
              </div>
              <div>
-               <h1 className="text-xl font-black text-slate-900 leading-none uppercase tracking-tighter">Market Snapshot Pro</h1>
-               <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Evening Intelligence System</p>
+               <h1 className="text-2xl font-black text-slate-900 leading-none uppercase tracking-tighter">SnapReport Pro</h1>
+               <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1.5">Vivek Financial Focus Ltd.</p>
              </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button 
               onClick={loadData}
-              className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 font-black py-2.5 px-5 rounded-xl transition-all border border-slate-200 uppercase tracking-widest text-[10px]"
+              className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-black py-3.5 px-6 rounded-2xl transition-all border border-slate-200 uppercase tracking-widest text-[10px]"
             >
               <i className="fa-solid fa-rotate"></i>
-              Refresh
+              Refresh Data
             </button>
             <button 
               onClick={copyImageToClipboard}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 px-6 rounded-xl shadow-lg shadow-emerald-600/20 transition-all uppercase tracking-widest text-[10px]"
+              className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-8 rounded-2xl shadow-xl shadow-emerald-600/30 transition-all uppercase tracking-widest text-[10px]"
             >
               <i className="fa-brands fa-whatsapp text-lg"></i>
               Copy for WhatsApp
@@ -141,20 +139,30 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto mt-10 flex justify-center px-4">
-        <div className="p-4 bg-white rounded-[48px] shadow-2xl border border-slate-100">
+      {/* Centered Report View */}
+      <div className="max-w-6xl mx-auto mt-16 flex justify-center px-6">
+        <div className="p-6 bg-white rounded-[60px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-slate-100">
           {data && <MarketSnapshotReport data={data} reportRef={reportRef} />}
         </div>
       </div>
 
-      <div className="max-w-md mx-auto mt-12 bg-white/50 p-6 rounded-3xl text-center text-slate-400 border border-slate-200/50">
-        <p className="font-black text-[9px] uppercase tracking-[0.3em] mb-3">Broadcast Workflow</p>
-        <div className="flex justify-center gap-6 items-center">
-            <span className="text-[10px] font-bold uppercase opacity-60">1. Click Copy</span>
-            <i className="fa-solid fa-arrow-right text-[8px] opacity-20"></i>
-            <span className="text-[10px] font-bold uppercase opacity-60">2. Open WhatsApp</span>
-            <i className="fa-solid fa-arrow-right text-[8px] opacity-20"></i>
-            <span className="text-[10px] font-black uppercase text-emerald-600">3. Paste & Send</span>
+      {/* Simplified Helper */}
+      <div className="max-w-md mx-auto mt-20 text-center">
+        <div className="inline-flex items-center gap-8 text-slate-300">
+            <div className="flex flex-col items-center">
+                <div className="w-10 h-10 border-2 border-slate-200 rounded-full flex items-center justify-center mb-3 font-black text-xs">1</div>
+                <span className="text-[10px] font-black uppercase tracking-widest">Generate</span>
+            </div>
+            <div className="h-px w-8 bg-slate-200"></div>
+            <div className="flex flex-col items-center">
+                <div className="w-10 h-10 border-2 border-slate-200 rounded-full flex items-center justify-center mb-3 font-black text-xs">2</div>
+                <span className="text-[10px] font-black uppercase tracking-widest">Copy</span>
+            </div>
+            <div className="h-px w-8 bg-slate-200"></div>
+            <div className="flex flex-col items-center">
+                <div className="w-10 h-10 bg-emerald-100 border-2 border-emerald-500 text-emerald-600 rounded-full flex items-center justify-center mb-3 font-black text-xs">3</div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">WhatsApp</span>
+            </div>
         </div>
       </div>
     </div>
